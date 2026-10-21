@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }} — документация API</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+  <link rel="stylesheet" href="/static/progress.css">
+</head>
+<body>
+  <main class="lab-shell">
+    <section class="progress-panel" id="progress-panel" aria-labelledby="progress-title">
+      <h1 id="progress-title">{{ title }}</h1>
+      <p>Зарегистрируйтесь, чтобы получить учебный токен, или введите ранее выданный токен.</p>
+      <form id="registration-form">
+        <h2>Регистрация студента</h2>
+        <div class="registration-fields">
+          <label>Фамилия<input name="surname" required maxlength="100" autocomplete="family-name"></label>
+          <label>Имя<input name="first_name" required maxlength="100" autocomplete="given-name"></label>
+          <label>Группа<input name="group_name" required maxlength="100" autocomplete="off"></label>
+        </div>
+        <button type="submit">Получить токен</button>
+      </form>
+      <div id="issued-token-panel" hidden>
+        <label for="issued-token">Ваш токен — скопируйте его и сохраните до окончания занятия</label>
+        <div class="token-row"><input id="issued-token" type="text" readonly><button id="copy-token" type="button">Скопировать</button></div>
+      </div>
+      <form id="token-form">
+        <label for="student-token">Учебный токен</label>
+        <div class="token-row">
+          <input id="student-token" name="token" type="password" autocomplete="off" spellcheck="false">
+          <button type="submit">Подключить</button>
+        </div>
+      </form>
+      <p id="connection-status" role="status" aria-live="polite">Токен не введён.</p>
+      <ol id="task-list" class="task-list">
+        {% for task in tasks %}
+        <li class="task" data-task-code="{{ task.task_code }}">
+          <span class="task-state" aria-hidden="true">○</span>
+          <div><h2>{{ task.title }}</h2><p>{{ task.description }}</p></div>
+        </li>
+        {% endfor %}
+      </ol>
+      <p id="completion-message" class="completion-message" role="status" hidden>
+        Задание успешно выполнено! На этом лабораторная работа завершена.
+      </p>
+    </section>
+  </main>
+  <div id="progress-toast" class="progress-toast" role="status" aria-live="polite" hidden></div>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <script src="/static/progress.js"></script>
+</body>
+</html>
