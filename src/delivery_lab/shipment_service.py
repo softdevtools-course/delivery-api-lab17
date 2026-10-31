@@ -193,6 +193,14 @@ def cancel_shipment(
         ).fetchone()
         if row is None:
             raise HTTPException(status_code=404, detail="Shipment not found")
+        protected_task = connection.execute(
+            """SELECT 1 FROM tasks
+               WHERE session_id = ? AND target_shipment_id = ? AND task_code = 'update_delivery'
+               LIMIT 1""",
+            (session.session_id, shipment_id),
+        ).fetchone()
+        if protected_task is not None:
+            raise HTTPException(status_code=409, detail="This shipment is reserved for the delivery update task and cannot be cancelled")
         if row["status"] not in ("created", "accepted"):
             raise HTTPException(status_code=409, detail="Shipment can no longer be cancelled")
         connection.execute(
