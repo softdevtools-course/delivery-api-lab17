@@ -71,6 +71,30 @@ def test_cancel_changes_only_target_shipment_status(tmp_path):
     assert next(item for item in other if item["shipment_id"] != target["shipment_id"])["status"] != "cancelled"
 
 
+def test_update_task_shipment_cannot_be_cancelled_but_can_be_changed(tmp_path):
+    client = TestClient(create_app(tmp_path / "delivery.sqlite3"))
+    token = register(client)
+    shipments = client.get("/shipments", headers=headers(token)).json()
+    target = next(item for item in shipments if item["recipient_name"] == "Сидоров Сидор Сидорович")
+    shipment_id = target["shipment_id"]
+    tracking_before = client.get(f"/shipments/{shipment_id}/tracking", headers=headers(token)).json()
+
+    cancel = client.post(f"/shipments/{shipment_id}/cancel", headers=headers(token))
+
+    assert cancel.status_code == 409
+    assert "cannot be cancelled" in cancel.json()["detail"]
+    assert client.get(f"/shipments/{shipment_id}", headers=headers(token)).json() == target
+    assert client.get(f"/shipments/{shipment_id}/tracking", headers=headers(token)).json() == tracking_before
+
+    update = client.patch(
+        f"/shipments/{shipment_id}",
+        headers=headers(token),
+        json={"pickup_point_id": "cheb-003"},
+    )
+    assert update.status_code == 200
+    assert update.json()["pickup_point_id"] == "cheb-003"
+
+
 def test_update_changes_delivery_to_requested_pickup_point(tmp_path):
     client = TestClient(create_app(tmp_path / "delivery.sqlite3"))
     token = register(client)
